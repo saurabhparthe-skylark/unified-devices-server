@@ -1,0 +1,120 @@
+# =============================================================================
+# Unified Devices Server - Docker Compose
+# LiDAR + Radar + GStreamer Combined Server
+# =============================================================================
+
+services:
+  unified-devices-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: unified-devices-server
+    restart: unless-stopped
+    
+    # Host network for best performance with UDP and streaming
+    network_mode: host
+    
+    environment:
+      # =========================================================================
+      # Server Configuration
+      # =========================================================================
+      - HOST=0.0.0.0
+      - API_PORT=8090
+      - TZ=Asia/Kolkata
+      
+      # =========================================================================
+      # LiDAR Module Configuration
+      # =========================================================================
+      - LIDAR_ENABLED=true
+      - LIDAR_UDP_PORT=12345
+      - LIDAR_MAX_POINTS=2000000
+      - LIDAR_VOXEL_SIZE=0.02
+      
+      # =========================================================================
+      # Radar Module Configuration
+      # =========================================================================
+      - RADAR_ENABLED=true
+      - RADAR_TTL=0.3
+      - RADAR_MAX_RANGE=50.0
+      
+      # =========================================================================
+      # GStreamer Module Configuration
+      # =========================================================================
+      - GSTREAMER_ENABLED=true
+      - RTSP_PORT=8560
+      - SRT_PORT=8561
+      - SRT_LATENCY=50
+      - GST_LATENCY=0
+      - SRT_PASSPHRASE=
+      - STATE_FILE=/app/state/streams_state.json
+      
+      # =========================================================================
+      # Security Configuration
+      # =========================================================================
+      - API_KEY=
+      - RATE_LIMIT_ENABLED=true
+      - RATE_LIMIT_RPS=100
+      - MAX_CONNECTIONS=1000
+      - MAX_DEVICES=100
+      
+      # =========================================================================
+      # GStreamer Debug Settings
+      # =========================================================================
+      - GST_DEBUG=2
+      - GST_DEBUG_NO_COLOR=1
+      - GST_REGISTRY_FORK=no
+    
+    volumes:
+      # Persistent state for stream configurations
+      - ./state:/app/state
+      # Logs directory
+      - ./logs:/app/logs
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: 4G
+        reservations:
+          cpus: '2'
+          memory: 512M
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+# =============================================================================
+# Alternative: Bridge Network Mode (if host mode not required)
+# =============================================================================
+# To use bridge mode instead of host mode, uncomment below and comment out
+# network_mode: host above
+#
+#     ports:
+#       # API
+#       - "8090:8090"
+#       # LiDAR UDP
+#       - "12345:12345/udp"
+#       # RTSP
+#       - "8560:8560"
+#       - "8560:8560/udp"
+#       # SRT range
+#       - "8561-8580:8561-8580/udp"
+#
+#     networks:
+#       - devices-network
+#
+# networks:
+#   devices-network:
+#     driver: bridge

@@ -1,0 +1,22 @@
+# Binaries
+unified-devices-server
+*.exe
+
+# State and logs
+state/
+logs/
+*.json
+!go.mod
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Go build cache
+/vendor/
