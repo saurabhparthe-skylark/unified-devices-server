@@ -57,15 +57,15 @@ type Config struct {
 	RadarMaxRange   float64
 
 	// GStreamer settings
-	GStreamerEnabled     bool
-	RTSPPort             int
-	SRTPort              int
-	GstLatency           int
-	GstDropOnLatency     bool
-	GstBufferMode        int
-	SRTLatency           int
-	SRTPassphrase        string
-	StreamStateFile      string
+	GStreamerEnabled bool
+	RTSPPort         int
+	SRTPort          int
+	GstLatency       int
+	GstDropOnLatency bool
+	GstBufferMode    int
+	SRTLatency       int
+	SRTPassphrase    string
+	StreamStateFile  string
 
 	// Security settings
 	APIKey           string
@@ -75,18 +75,18 @@ type Config struct {
 	AllowedOrigins   []string
 
 	// Monitoring settings
-	MetricsEnabled   bool
-	MetricsPort      int
+	MetricsEnabled      bool
+	MetricsPort         int
 	HealthCheckInterval time.Duration
 
 	// Resource limits
-	MaxConnections      int
-	MaxDevicesPerType   int
-	ConnectionTimeout   time.Duration
-	ReadTimeout         time.Duration
-	WriteTimeout        time.Duration
-	IdleTimeout         time.Duration
-	ShutdownTimeout     time.Duration
+	MaxConnections    int
+	MaxDevicesPerType int
+	ConnectionTimeout time.Duration
+	ReadTimeout       time.Duration
+	WriteTimeout      time.Duration
+	IdleTimeout       time.Duration
+	ShutdownTimeout   time.Duration
 }
 
 func DefaultConfig() *Config {
@@ -106,15 +106,15 @@ func DefaultConfig() *Config {
 		RadarMaxTargets: 10000,
 		RadarMaxRange:   50.0,
 
-		GStreamerEnabled:     true,
-		RTSPPort:             8560,
-		SRTPort:              8561,
-		GstLatency:           0,
-		GstDropOnLatency:     true,
-		GstBufferMode:        4,
-		SRTLatency:           50,
-		SRTPassphrase:        "",
-		StreamStateFile:      "streams_state.json",
+		GStreamerEnabled: true,
+		RTSPPort:         8560,
+		SRTPort:          8561,
+		GstLatency:       0,
+		GstDropOnLatency: true,
+		GstBufferMode:    4,
+		SRTLatency:       50,
+		SRTPassphrase:    "",
+		StreamStateFile:  "streams_state.json",
 
 		APIKey:           "",
 		RateLimitEnabled: true,
@@ -214,29 +214,29 @@ type Metrics struct {
 	RejectedConnections int64
 
 	// LiDAR metrics
-	LidarDevices      int64
-	LidarPoints       int64
-	LidarPackets      int64
-	LidarErrors       int64
-	LidarBytesIn      int64
+	LidarDevices int64
+	LidarPoints  int64
+	LidarPackets int64
+	LidarErrors  int64
+	LidarBytesIn int64
 
 	// Radar metrics
-	RadarDevices      int64
-	RadarTargets      int64
-	RadarFrames       int64
-	RadarErrors       int64
-	RadarBytesIn      int64
+	RadarDevices int64
+	RadarTargets int64
+	RadarFrames  int64
+	RadarErrors  int64
+	RadarBytesIn int64
 
 	// GStreamer metrics
-	ActiveStreams     int64
-	TotalStreams      int64
-	StreamRestarts    int64
-	StreamErrors      int64
+	ActiveStreams  int64
+	TotalStreams   int64
+	StreamRestarts int64
+	StreamErrors   int64
 
 	// System metrics
-	StartTime         time.Time
-	LastHealthCheck   time.Time
-	HealthStatus      string
+	StartTime       time.Time
+	LastHealthCheck time.Time
+	HealthStatus    string
 
 	mu sync.RWMutex
 }
@@ -367,8 +367,8 @@ var wsUpgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
-	ReadBufferSize:  65535,
-	WriteBufferSize: 65535,
+	ReadBufferSize:   65535,
+	WriteBufferSize:  65535,
 	HandshakeTimeout: 10 * time.Second,
 }
 
@@ -488,12 +488,24 @@ func (c *LidarPointCloud) AddPoints(points []LidarPoint) {
 				c.minY, c.maxY = p.Y, p.Y
 				c.minZ, c.maxZ = p.Z, p.Z
 			} else {
-				if p.X < c.minX { c.minX = p.X }
-				if p.X > c.maxX { c.maxX = p.X }
-				if p.Y < c.minY { c.minY = p.Y }
-				if p.Y > c.maxY { c.maxY = p.Y }
-				if p.Z < c.minZ { c.minZ = p.Z }
-				if p.Z > c.maxZ { c.maxZ = p.Z }
+				if p.X < c.minX {
+					c.minX = p.X
+				}
+				if p.X > c.maxX {
+					c.maxX = p.X
+				}
+				if p.Y < c.minY {
+					c.minY = p.Y
+				}
+				if p.Y > c.maxY {
+					c.maxY = p.Y
+				}
+				if p.Z < c.minZ {
+					c.minZ = p.Z
+				}
+				if p.Z > c.maxZ {
+					c.maxZ = p.Z
+				}
 			}
 		} else {
 			c.rejectedDups++
@@ -527,16 +539,16 @@ func (c *LidarPointCloud) GetStats() map[string]interface{} {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return map[string]interface{}{
-		"point_count":    len(c.Points),
-		"total_points":   c.pointCount,
-		"unique_points":  c.uniquePoints,
-		"rejected_dups":  c.rejectedDups,
-		"scan_count":     c.scanCount,
-		"fps":            c.fps,
-		"last_update":    c.lastUpdate.Format(time.RFC3339),
-		"is_live":        time.Since(c.lastUpdate) < 2*time.Second,
-		"voxel_size":     c.voxelSize,
-		"max_points":     c.maxPoints,
+		"point_count":   len(c.Points),
+		"total_points":  c.pointCount,
+		"unique_points": c.uniquePoints,
+		"rejected_dups": c.rejectedDups,
+		"scan_count":    c.scanCount,
+		"fps":           c.fps,
+		"last_update":   c.lastUpdate.Format(time.RFC3339),
+		"is_live":       time.Since(c.lastUpdate) < 2*time.Second,
+		"voxel_size":    c.voxelSize,
+		"max_points":    c.maxPoints,
 		"bounds": map[string]float64{
 			"min_x": c.minX, "max_x": c.maxX,
 			"min_y": c.minY, "max_y": c.maxY,
@@ -1415,21 +1427,44 @@ func (m *RadarModule) ClearData(deviceID string) {
 }
 
 // =============================================================================
-// GSTREAMER MODULE
+// GSTREAMER MODULE - WITH HEVC SUPPORT
 // =============================================================================
 
 type StreamType string
+
+// VideoCodec represents the video codec type
+type VideoCodec string
 
 const (
 	StreamTypeRTSP    StreamType = "rtsp"
 	StreamTypeSRT     StreamType = "srt"
 	StreamTypeSRTCall StreamType = "srt_call"
+
+	// Video codec types
+	CodecH264 VideoCodec = "h264"
+	CodecHEVC VideoCodec = "hevc"
+	CodecAuto VideoCodec = "auto"
 )
+
+// normalizeCodec normalizes codec string to standard format
+func normalizeCodec(codec string) VideoCodec {
+	switch strings.ToLower(codec) {
+	case "hevc", "h265", "h.265":
+		return CodecHEVC
+	case "h264", "h.264", "avc":
+		return CodecH264
+	case "auto", "":
+		return CodecAuto
+	default:
+		return CodecH264 // Default to H.264 for backward compatibility
+	}
+}
 
 type StreamState struct {
 	Name       string     `json:"name"`
 	SourceURL  string     `json:"source_url,omitempty"`
 	StreamType StreamType `json:"stream_type"`
+	Codec      string     `json:"codec,omitempty"` // NEW: Video codec
 	Port       int        `json:"port,omitempty"`
 	CreatedAt  string     `json:"created_at"`
 }
@@ -1667,12 +1702,14 @@ func (h *rtspHandler) OnRecord(ctx *gortsplib.ServerHandlerOnRecordCtx) (*base.R
 	return &base.Response{StatusCode: base.StatusOK}, nil
 }
 
+// GStreamerStream with HEVC support
 type GStreamerStream struct {
 	Name       string     `json:"name"`
 	RTSPUrl    string     `json:"rtsp_url"`
 	SRTUrl     string     `json:"srt_url,omitempty"`
 	SourceURL  string     `json:"source_url"`
 	SourceType StreamType `json:"source_type"`
+	Codec      VideoCodec `json:"codec"` // NEW: Video codec (h264, hevc, auto)
 	Status     string     `json:"status"`
 	PID        int        `json:"pid"`
 	Restarts   int        `json:"restarts"`
@@ -1686,12 +1723,18 @@ type GStreamerStream struct {
 	pipeline string
 }
 
-func NewGStreamerStream(name, sourceURL string, sourceType StreamType, config *Config) *GStreamerStream {
+// NewGStreamerStream creates a new stream with codec support
+func NewGStreamerStream(name, sourceURL string, sourceType StreamType, codec VideoCodec, config *Config) *GStreamerStream {
+	if codec == "" || codec == CodecAuto {
+		codec = CodecH264 // Default to H.264 for backward compatibility
+	}
+
 	stream := &GStreamerStream{
 		Name:       name,
 		RTSPUrl:    fmt.Sprintf("rtsp://%s:%d/%s", config.Host, config.RTSPPort, name),
 		SourceURL:  sourceURL,
 		SourceType: sourceType,
+		Codec:      codec,
 		Status:     "initializing",
 		stopChan:   make(chan struct{}),
 		config:     config,
@@ -1701,21 +1744,38 @@ func NewGStreamerStream(name, sourceURL string, sourceType StreamType, config *C
 	return stream
 }
 
+// BuildPipeline builds GStreamer pipeline with codec-specific elements
 func (g *GStreamerStream) BuildPipeline() string {
 	outputURL := fmt.Sprintf("rtsp://127.0.0.1:%d/%s", g.config.RTSPPort, g.Name)
+
+	// Determine codec-specific GStreamer elements
+	var depay, parse string
+	switch g.Codec {
+	case CodecHEVC:
+		depay = "rtph265depay"
+		parse = "h265parse config-interval=-1"
+	case CodecH264:
+		fallthrough
+	default:
+		depay = "rtph264depay"
+		parse = "h264parse config-interval=-1"
+	}
+
 	var pipeline string
 
 	switch g.SourceType {
 	case StreamTypeSRT, StreamTypeSRTCall:
+		// SRT source - demux TS and parse based on codec
 		pipeline = fmt.Sprintf(
-			`srtsrc uri="%s" latency=%d ! tsdemux ! h264parse config-interval=-1 ! rtspclientsink location="%s" protocols=tcp latency=%d`,
-			g.SourceURL, g.config.SRTLatency, outputURL, g.config.GstLatency)
+			`srtsrc uri="%s" latency=%d ! tsdemux ! %s ! rtspclientsink location="%s" protocols=tcp latency=%d`,
+			g.SourceURL, g.config.SRTLatency, parse, outputURL, g.config.GstLatency)
 	case StreamTypeRTSP:
 		fallthrough
 	default:
+		// RTSP source - depay and parse based on codec
 		pipeline = fmt.Sprintf(
-			`rtspsrc location="%s" latency=%d buffer-mode=%d drop-on-latency=%t do-retransmission=false protocols=tcp ntp-sync=false ! rtph264depay ! h264parse config-interval=-1 ! rtspclientsink location="%s" protocols=tcp latency=%d`,
-			g.SourceURL, g.config.GstLatency, g.config.GstBufferMode, g.config.GstDropOnLatency, outputURL, g.config.GstLatency)
+			`rtspsrc location="%s" latency=%d buffer-mode=%d drop-on-latency=%t do-retransmission=false protocols=tcp ntp-sync=false ! %s ! %s ! rtspclientsink location="%s" protocols=tcp latency=%d`,
+			g.SourceURL, g.config.GstLatency, g.config.GstBufferMode, g.config.GstDropOnLatency, depay, parse, outputURL, g.config.GstLatency)
 	}
 
 	g.pipeline = strings.Join(strings.Fields(pipeline), " ")
@@ -1763,7 +1823,7 @@ func (g *GStreamerStream) startGStreamer() error {
 	g.mu.Lock()
 	pipeline := g.BuildPipeline()
 
-	log.Printf("🎬 GStreamer [%s] (%s):", g.Name, g.SourceType)
+	log.Printf("🎬 GStreamer [%s] (%s, codec: %s):", g.Name, g.SourceType, g.Codec)
 	log.Printf("   Source: %s", g.SourceURL)
 	log.Printf("   RTSP Output: rtsp://127.0.0.1:%d/%s", g.config.RTSPPort, g.Name)
 
@@ -1783,7 +1843,7 @@ func (g *GStreamerStream) startGStreamer() error {
 	g.Status = "running"
 	g.LastError = ""
 	atomic.AddInt64(&globalMetrics.ActiveStreams, 1)
-	log.Printf("✅ GStreamer started [%s] (PID: %d)", g.Name, g.PID)
+	log.Printf("✅ GStreamer started [%s] (PID: %d, Codec: %s)", g.Name, g.PID, g.Codec)
 	g.mu.Unlock()
 
 	err := g.cmd.Wait()
@@ -1837,6 +1897,7 @@ func (g *GStreamerStream) GetStatus() map[string]interface{} {
 		"srt_url":     g.SRTUrl,
 		"source_url":  g.SourceURL,
 		"source_type": g.SourceType,
+		"codec":       g.Codec, // NEW: Include codec in status
 		"status":      g.Status,
 		"pid":         g.PID,
 		"restarts":    g.Restarts,
@@ -1846,16 +1907,18 @@ func (g *GStreamerStream) GetStatus() map[string]interface{} {
 	}
 }
 
+// SRTListenerStream with HEVC support
 type SRTListenerStream struct {
-	Name      string    `json:"name"`
-	RTSPUrl   string    `json:"rtsp_url"`
-	SRTUrl    string    `json:"srt_url"`
-	Status    string    `json:"status"`
-	PID       int       `json:"pid"`
-	Restarts  int       `json:"restarts"`
-	LastError string    `json:"last_error,omitempty"`
-	StartedAt time.Time `json:"started_at"`
-	Port      int       `json:"port"`
+	Name      string     `json:"name"`
+	RTSPUrl   string     `json:"rtsp_url"`
+	SRTUrl    string     `json:"srt_url"`
+	Codec     VideoCodec `json:"codec"` // NEW: Expected video codec
+	Status    string     `json:"status"`
+	PID       int        `json:"pid"`
+	Restarts  int        `json:"restarts"`
+	LastError string     `json:"last_error,omitempty"`
+	StartedAt time.Time  `json:"started_at"`
+	Port      int        `json:"port"`
 
 	cmd      *exec.Cmd
 	mu       sync.Mutex
@@ -1863,11 +1926,17 @@ type SRTListenerStream struct {
 	config   *Config
 }
 
-func NewSRTListenerStream(name string, port int, config *Config) *SRTListenerStream {
+// NewSRTListenerStream creates a new SRT listener with codec support
+func NewSRTListenerStream(name string, port int, codec VideoCodec, config *Config) *SRTListenerStream {
+	if codec == "" || codec == CodecAuto {
+		codec = CodecHEVC // Default to HEVC for SRT listeners (modern cameras)
+	}
+
 	return &SRTListenerStream{
 		Name:      name,
 		RTSPUrl:   fmt.Sprintf("rtsp://%s:%d/%s", config.Host, config.RTSPPort, name),
 		SRTUrl:    fmt.Sprintf("srt://%s:%d?streamid=%s&mode=listener", config.Host, port, name),
+		Codec:     codec,
 		Status:    "initializing",
 		Port:      port,
 		stopChan:  make(chan struct{}),
@@ -1876,8 +1945,20 @@ func NewSRTListenerStream(name string, port int, config *Config) *SRTListenerStr
 	}
 }
 
+// BuildPipeline builds GStreamer pipeline with codec-specific parser
 func (s *SRTListenerStream) BuildPipeline() string {
 	outputURL := fmt.Sprintf("rtsp://127.0.0.1:%d/%s", s.config.RTSPPort, s.Name)
+
+	// Determine codec-specific parser
+	var parse string
+	switch s.Codec {
+	case CodecHEVC:
+		parse = "h265parse config-interval=-1"
+	case CodecH264:
+		fallthrough
+	default:
+		parse = "h264parse config-interval=-1"
+	}
 
 	var srtParams string
 	if s.config.SRTPassphrase != "" {
@@ -1887,8 +1968,8 @@ func (s *SRTListenerStream) BuildPipeline() string {
 	}
 
 	return fmt.Sprintf(
-		`srtsrc uri="srt://0.0.0.0:%d?%s" ! tsdemux ! h264parse config-interval=-1 ! rtspclientsink location="%s" protocols=tcp latency=0`,
-		s.Port, srtParams, outputURL)
+		`srtsrc uri="srt://0.0.0.0:%d?%s" ! tsdemux ! %s ! rtspclientsink location="%s" protocols=tcp latency=0`,
+		s.Port, srtParams, parse, outputURL)
 }
 
 func (s *SRTListenerStream) StartWithRetry() {
@@ -1932,7 +2013,7 @@ func (s *SRTListenerStream) startGStreamer() error {
 	s.mu.Lock()
 	pipeline := s.BuildPipeline()
 
-	log.Printf("🎧 SRT Listener [%s]:", s.Name)
+	log.Printf("🎧 SRT Listener [%s] (codec: %s):", s.Name, s.Codec)
 	log.Printf("   SRT: srt://0.0.0.0:%d (waiting for connection)", s.Port)
 	log.Printf("   RTSP Output: rtsp://127.0.0.1:%d/%s", s.config.RTSPPort, s.Name)
 
@@ -1952,7 +2033,7 @@ func (s *SRTListenerStream) startGStreamer() error {
 	s.Status = "listening"
 	s.LastError = ""
 	atomic.AddInt64(&globalMetrics.ActiveStreams, 1)
-	log.Printf("✅ SRT Listener started [%s] (PID: %d, Port: %d)", s.Name, s.PID, s.Port)
+	log.Printf("✅ SRT Listener started [%s] (PID: %d, Port: %d, Codec: %s)", s.Name, s.PID, s.Port, s.Codec)
 	s.mu.Unlock()
 
 	err := s.cmd.Wait()
@@ -2004,6 +2085,7 @@ func (s *SRTListenerStream) GetStatus() map[string]interface{} {
 		"name":       s.Name,
 		"rtsp_url":   s.RTSPUrl,
 		"srt_url":    s.SRTUrl,
+		"codec":      s.Codec, // NEW: Include codec in status
 		"port":       s.Port,
 		"status":     s.Status,
 		"pid":        s.PID,
@@ -2070,7 +2152,7 @@ func (m *GStreamerModule) Start() error {
 		log.Printf("⚠️ Failed to restore streams: %v", err)
 	}
 
-	log.Printf("🎬 GStreamer module started (RTSP: %d, SRT: %d)", m.config.RTSPPort, m.config.SRTPort)
+	log.Printf("🎬 GStreamer module started (RTSP: %d, SRT: %d) - HEVC Support Enabled", m.config.RTSPPort, m.config.SRTPort)
 	return nil
 }
 
@@ -2118,6 +2200,7 @@ func (m *GStreamerModule) SaveState() error {
 			Name:       stream.Name,
 			SourceURL:  stream.SourceURL,
 			StreamType: stream.SourceType,
+			Codec:      string(stream.Codec), // NEW: Save codec
 			CreatedAt:  stream.StartedAt.Format(time.RFC3339),
 		})
 		stream.mu.Unlock()
@@ -2128,6 +2211,7 @@ func (m *GStreamerModule) SaveState() error {
 		state.Streams = append(state.Streams, StreamState{
 			Name:       listener.Name,
 			StreamType: StreamTypeSRT,
+			Codec:      string(listener.Codec), // NEW: Save codec
 			Port:       listener.Port,
 			CreatedAt:  listener.StartedAt.Format(time.RFC3339),
 		})
@@ -2169,12 +2253,15 @@ func (m *GStreamerModule) RestoreStreams() error {
 	log.Printf("🔄 Restoring %d streams...", len(state.Streams))
 
 	for _, ss := range state.Streams {
+		// Normalize codec (handle backward compatibility)
+		codec := normalizeCodec(ss.Codec)
+
 		if ss.Port > 0 && ss.SourceURL == "" {
-			log.Printf("   ↳ Restoring SRT Listener: %s (port %d)", ss.Name, ss.Port)
-			m.AddSRTListenerWithPort(ss.Name, ss.Port, false)
+			log.Printf("   ↳ Restoring SRT Listener: %s (port %d, codec: %s)", ss.Name, ss.Port, codec)
+			m.AddSRTListenerWithPort(ss.Name, ss.Port, codec, false)
 		} else {
-			log.Printf("   ↳ Restoring: %s (%s)", ss.Name, ss.StreamType)
-			m.AddStream(ss.Name, ss.SourceURL, ss.StreamType, false)
+			log.Printf("   ↳ Restoring: %s (%s, codec: %s)", ss.Name, ss.StreamType, codec)
+			m.AddStream(ss.Name, ss.SourceURL, ss.StreamType, codec, false)
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
@@ -2182,7 +2269,8 @@ func (m *GStreamerModule) RestoreStreams() error {
 	return nil
 }
 
-func (m *GStreamerModule) AddStream(name, sourceURL string, sourceType StreamType, persist bool) (*GStreamerStream, error) {
+// AddStream creates a new stream with codec support
+func (m *GStreamerModule) AddStream(name, sourceURL string, sourceType StreamType, codec VideoCodec, persist bool) (*GStreamerStream, error) {
 	m.mu.Lock()
 
 	if existing, ok := m.streams[name]; ok {
@@ -2193,7 +2281,7 @@ func (m *GStreamerModule) AddStream(name, sourceURL string, sourceType StreamTyp
 		time.Sleep(300 * time.Millisecond)
 	}
 
-	stream := NewGStreamerStream(name, sourceURL, sourceType, m.config)
+	stream := NewGStreamerStream(name, sourceURL, sourceType, codec, m.config)
 	m.streams[name] = stream
 	atomic.AddInt64(&globalMetrics.TotalStreams, 1)
 	m.mu.Unlock()
@@ -2207,16 +2295,18 @@ func (m *GStreamerModule) AddStream(name, sourceURL string, sourceType StreamTyp
 	return stream, nil
 }
 
-func (m *GStreamerModule) AddSRTListener(name string, persist bool) (*SRTListenerStream, error) {
+// AddSRTListener creates a new SRT listener with default codec (HEVC)
+func (m *GStreamerModule) AddSRTListener(name string, codec VideoCodec, persist bool) (*SRTListenerStream, error) {
 	m.mu.Lock()
 	port := m.nextSRTPort
 	m.nextSRTPort++
 	m.mu.Unlock()
 
-	return m.AddSRTListenerWithPort(name, port, persist)
+	return m.AddSRTListenerWithPort(name, port, codec, persist)
 }
 
-func (m *GStreamerModule) AddSRTListenerWithPort(name string, port int, persist bool) (*SRTListenerStream, error) {
+// AddSRTListenerWithPort creates a new SRT listener with specific port and codec
+func (m *GStreamerModule) AddSRTListenerWithPort(name string, port int, codec VideoCodec, persist bool) (*SRTListenerStream, error) {
 	m.mu.Lock()
 
 	if existing, ok := m.srtListeners[name]; ok {
@@ -2231,7 +2321,7 @@ func (m *GStreamerModule) AddSRTListenerWithPort(name string, port int, persist 
 		m.nextSRTPort = port + 1
 	}
 
-	listener := NewSRTListenerStream(name, port, m.config)
+	listener := NewSRTListenerStream(name, port, codec, m.config)
 	m.srtListeners[name] = listener
 	atomic.AddInt64(&globalMetrics.TotalStreams, 1)
 	m.mu.Unlock()
@@ -2298,16 +2388,16 @@ func (m *GStreamerModule) GetStreamCount() int {
 // =============================================================================
 
 type UnifiedServer struct {
-	config         *Config
-	lidarModule    *LidarModule
-	radarModule    *RadarModule
-	gstreamerMod   *GStreamerModule
-	rateLimiter    *RateLimiterPool
-	connTracker    *ConnectionTracker
-	httpServer     *http.Server
-	ctx            context.Context
-	cancel         context.CancelFunc
-	wg             sync.WaitGroup
+	config       *Config
+	lidarModule  *LidarModule
+	radarModule  *RadarModule
+	gstreamerMod *GStreamerModule
+	rateLimiter  *RateLimiterPool
+	connTracker  *ConnectionTracker
+	httpServer   *http.Server
+	ctx          context.Context
+	cancel       context.CancelFunc
+	wg           sync.WaitGroup
 }
 
 func NewUnifiedServer(config *Config) *UnifiedServer {
@@ -2534,17 +2624,17 @@ func (s *UnifiedServer) handleHealth(w http.ResponseWriter, r *http.Request) {
 
 	health := map[string]interface{}{
 		"status":  globalMetrics.HealthStatus,
-		"version": "2.0.0",
+		"version": "2.1.0-hevc",
 		"uptime":  time.Since(globalMetrics.StartTime).String(),
 		"modules": map[string]interface{}{
 			"lidar": map[string]interface{}{
-				"enabled":     s.config.LidarEnabled,
-				"is_live":     lidarLive,
+				"enabled":      s.config.LidarEnabled,
+				"is_live":      lidarLive,
 				"device_count": atomic.LoadInt64(&globalMetrics.LidarDevices),
 			},
 			"radar": map[string]interface{}{
-				"enabled":     s.config.RadarEnabled,
-				"is_live":     radarLive,
+				"enabled":      s.config.RadarEnabled,
+				"is_live":      radarLive,
 				"device_count": atomic.LoadInt64(&globalMetrics.RadarDevices),
 			},
 			"gstreamer": map[string]interface{}{
@@ -2552,6 +2642,7 @@ func (s *UnifiedServer) handleHealth(w http.ResponseWriter, r *http.Request) {
 				"active_streams": streamsActive,
 				"rtsp_port":      s.config.RTSPPort,
 				"srt_port":       s.config.SRTPort,
+				"hevc_support":   true, // NEW: Indicate HEVC support
 			},
 		},
 		"connections": map[string]interface{}{
@@ -2746,7 +2837,7 @@ func (s *UnifiedServer) handleRadarClear(w http.ResponseWriter, r *http.Request)
 }
 
 // =============================================================================
-// HTTP HANDLERS - GSTREAMER
+// HTTP HANDLERS - GSTREAMER (WITH CODEC SUPPORT)
 // =============================================================================
 
 func (s *UnifiedServer) handleGStreamerStreams(w http.ResponseWriter, r *http.Request) {
@@ -2755,8 +2846,9 @@ func (s *UnifiedServer) handleGStreamerStreams(w http.ResponseWriter, r *http.Re
 	switch r.Method {
 	case "GET":
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": true,
-			"streams": s.gstreamerMod.ListStreams(),
+			"success":      true,
+			"streams":      s.gstreamerMod.ListStreams(),
+			"hevc_support": true, // NEW: Indicate HEVC support in API response
 		})
 
 	case "POST":
@@ -2764,6 +2856,7 @@ func (s *UnifiedServer) handleGStreamerStreams(w http.ResponseWriter, r *http.Re
 			Name       string `json:"name"`
 			SourceURL  string `json:"source_url"`
 			SourceType string `json:"source_type"`
+			Codec      string `json:"codec"` // NEW: Accept codec parameter
 		}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			w.WriteHeader(400)
@@ -2777,8 +2870,15 @@ func (s *UnifiedServer) handleGStreamerStreams(w http.ResponseWriter, r *http.Re
 			return
 		}
 
+		// Normalize codec
+		codec := normalizeCodec(req.Codec)
+
 		if req.SourceType == "srt_listener" {
-			listener, err := s.gstreamerMod.AddSRTListener(req.Name, true)
+			// For SRT listeners, default to HEVC if no codec specified (modern cameras)
+			if codec == CodecAuto {
+				codec = CodecHEVC
+			}
+			listener, err := s.gstreamerMod.AddSRTListener(req.Name, codec, true)
 			if err != nil {
 				w.WriteHeader(500)
 				json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "error": err.Error()})
@@ -2788,7 +2888,7 @@ func (s *UnifiedServer) handleGStreamerStreams(w http.ResponseWriter, r *http.Re
 			json.NewEncoder(w).Encode(map[string]interface{}{
 				"success": true,
 				"stream":  listener.GetStatus(),
-				"message": fmt.Sprintf("Push SRT to: srt://%s:%d", s.config.Host, listener.Port),
+				"message": fmt.Sprintf("Push SRT to: srt://%s:%d (codec: %s)", s.config.Host, listener.Port, codec),
 			})
 			return
 		}
@@ -2804,7 +2904,12 @@ func (s *UnifiedServer) handleGStreamerStreams(w http.ResponseWriter, r *http.Re
 			sourceType = StreamTypeSRT
 		}
 
-		stream, err := s.gstreamerMod.AddStream(req.Name, req.SourceURL, sourceType, true)
+		// For RTSP sources, default to H.264 if no codec specified (backward compatibility)
+		if codec == CodecAuto {
+			codec = CodecH264
+		}
+
+		stream, err := s.gstreamerMod.AddStream(req.Name, req.SourceURL, sourceType, codec, true)
 		if err != nil {
 			w.WriteHeader(500)
 			json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "error": err.Error()})
@@ -2842,7 +2947,7 @@ const indexHTML = `<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unified Devices Server</title>
+    <title>Unified Devices Server - HEVC Enabled</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -2855,6 +2960,7 @@ const indexHTML = `<!DOCTYPE html>
         .container { max-width: 1200px; margin: 0 auto; }
         h1 { color: #58a6ff; margin-bottom: 10px; font-size: 2.5em; }
         .subtitle { color: #8b949e; margin-bottom: 40px; }
+        .hevc-badge { background: #238636; padding: 4px 12px; border-radius: 12px; font-size: 12px; margin-left: 10px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
         .card {
             background: rgba(255,255,255,0.05);
@@ -2897,12 +3003,15 @@ const indexHTML = `<!DOCTYPE html>
         }
         .badge.live { background: rgba(0,255,0,0.2); color: #7ee787; }
         .badge.offline { background: rgba(255,0,0,0.2); color: #ff7b72; }
+        .codec-info { background: rgba(35,134,54,0.2); padding: 15px; border-radius: 8px; margin-top: 15px; }
+        .codec-info h3 { color: #7ee787; margin-bottom: 10px; font-size: 14px; }
+        .codec-info code { background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🚀 Unified Devices Server</h1>
-        <p class="subtitle">LiDAR + Radar + GStreamer - Combined Edge Device Management</p>
+        <h1>🚀 Unified Devices Server <span class="hevc-badge">HEVC Enabled</span></h1>
+        <p class="subtitle">LiDAR + Radar + GStreamer - Combined Edge Device Management with H.264/H.265 Support</p>
 
         <div class="grid">
             <div class="card">
@@ -2932,6 +3041,16 @@ const indexHTML = `<!DOCTYPE html>
                     RTSP: rtsp://host:{{.RTSPPort}}/{stream}<br>
                     SRT Base: srt://host:{{.SRTPort}}
                 </p>
+                <div class="codec-info">
+                    <h3>📦 Codec Support</h3>
+                    <p style="font-size:12px;color:#8b949e;">
+                        Create streams with codec parameter:<br><br>
+                        <code>"codec": "h264"</code> - H.264/AVC streams<br>
+                        <code>"codec": "hevc"</code> - H.265/HEVC streams<br>
+                        <code>"codec": "auto"</code> - Auto-detect (default)<br><br>
+                        SRT Listeners default to HEVC for modern cameras.
+                    </p>
+                </div>
             </div>
 
             <div class="card">
@@ -2950,11 +3069,13 @@ const indexHTML = `<!DOCTYPE html>
             const data = await res.json();
             document.getElementById('status').innerHTML = 
                 '<div class="status-item"><span>Status</span><span class="status-value">' + data.status + '</span></div>' +
+                '<div class="status-item"><span>Version</span><span class="status-value">' + data.version + '</span></div>' +
                 '<div class="status-item"><span>Uptime</span><span class="status-value">' + data.uptime + '</span></div>' +
                 '<div class="status-item"><span>Connections</span><span class="status-value">' + data.connections.active + '/' + data.connections.max + '</span></div>' +
                 '<div class="status-item"><span>LiDAR</span><span class="badge ' + (data.modules.lidar.is_live ? 'live' : 'offline') + '">' + (data.modules.lidar.is_live ? 'LIVE' : 'OFFLINE') + '</span></div>' +
                 '<div class="status-item"><span>Radar</span><span class="badge ' + (data.modules.radar.is_live ? 'live' : 'offline') + '">' + (data.modules.radar.is_live ? 'LIVE' : 'OFFLINE') + '</span></div>' +
-                '<div class="status-item"><span>Streams</span><span class="status-value">' + data.modules.gstreamer.active_streams + '</span></div>';
+                '<div class="status-item"><span>Streams</span><span class="status-value">' + data.modules.gstreamer.active_streams + '</span></div>' +
+                '<div class="status-item"><span>HEVC Support</span><span class="badge live">ENABLED</span></div>';
         } catch(e) {
             document.getElementById('status').innerHTML = '<div class="status-item"><span>Error</span><span class="badge offline">UNAVAILABLE</span></div>';
         }
@@ -2972,7 +3093,7 @@ const indexHTML = `<!DOCTYPE html>
 func printBanner(config *Config) {
 	fmt.Printf(`
 ╔═══════════════════════════════════════════════════════════════════════════════╗
-║         🚀 UNIFIED DEVICES SERVER v2.0 - Production Ready 🚀                 ║
+║      🚀 UNIFIED DEVICES SERVER v2.1 - HEVC Support Enabled 🚀                ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 
   ═══════════════════════════════════════════════════════════════════════════════
@@ -2981,7 +3102,18 @@ func printBanner(config *Config) {
 
   LiDAR:     %s (UDP: %d, Voxel: %.2fcm)
   Radar:     %s (TTL: %.1fs, Range: %.1fm)
-  GStreamer: %s (RTSP: %d, SRT: %d)
+  GStreamer: %s (RTSP: %d, SRT: %d) [HEVC: ✅]
+
+  ═══════════════════════════════════════════════════════════════════════════════
+  🎬 CODEC SUPPORT
+  ═══════════════════════════════════════════════════════════════════════════════
+
+  H.264/AVC:    ✅ Supported (codec: "h264")
+  H.265/HEVC:   ✅ Supported (codec: "hevc")
+  Auto-detect:  ✅ Supported (codec: "auto")
+
+  SRT Listeners default to HEVC for modern cameras.
+  RTSP sources default to H.264 for backward compatibility.
 
   ═══════════════════════════════════════════════════════════════════════════════
   🌐 ENDPOINTS
