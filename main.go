@@ -1945,23 +1945,22 @@ func NewSRTListenerStream(name string, port int, codec VideoCodec, config *Confi
 	}
 }
 
-// BuildPipeline builds GStreamer pipeline with codec-specific parser and RTP payloader
-// The explicit RTP payloader is required for proper VPS/SPS/PPS header transmission in HEVC
+// BuildPipeline builds GStreamer pipeline with codec-specific parser
+// Uses queue elements and proper caps to ensure VPS/SPS/PPS are transmitted
 func (s *SRTListenerStream) BuildPipeline() string {
 	outputURL := fmt.Sprintf("rtsp://127.0.0.1:%d/%s", s.config.RTSPPort, s.Name)
 
-	// Determine codec-specific parser AND payloader
-	// For HEVC: h265parse extracts NAL units, rtph265pay creates RTP packets with proper headers
-	// For H264: h264parse extracts NAL units, rtph264pay creates RTP packets with proper headers
-	// config-interval=-1 ensures VPS/SPS/PPS (HEVC) or SPS/PPS (H264) are sent with every IDR frame
-	var parseAndPay string
+	// Determine codec-specific parser with config-interval=-1 to insert headers with every IDR
+	// The queue helps with buffering and ensures continuous data flow
+	// video/x-h265,stream-format=byte-stream forces the proper output format
+	var parseElements string
 	switch s.Codec {
 	case CodecHEVC:
-		parseAndPay = "h265parse config-interval=-1 ! rtph265pay config-interval=-1 pt=96"
+		parseElements = "queue ! h265parse config-interval=-1 ! video/x-h265,stream-format=byte-stream,alignment=au ! queue"
 	case CodecH264:
 		fallthrough
 	default:
-		parseAndPay = "h264parse config-interval=-1 ! rtph264pay config-interval=-1 pt=96"
+		parseElements = "queue ! h264parse config-interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au ! queue"
 	}
 
 	var srtParams string
@@ -1973,7 +1972,7 @@ func (s *SRTListenerStream) BuildPipeline() string {
 
 	return fmt.Sprintf(
 		`srtsrc uri="srt://0.0.0.0:%d?%s" ! tsdemux ! %s ! rtspclientsink location="%s" protocols=tcp latency=0`,
-		s.Port, srtParams, parseAndPay, outputURL)
+		s.Port, srtParams, parseElements, outputURL)
 }
 
 func (s *SRTListenerStream) StartWithRetry() {
