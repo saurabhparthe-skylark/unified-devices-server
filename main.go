@@ -1945,19 +1945,23 @@ func NewSRTListenerStream(name string, port int, codec VideoCodec, config *Confi
 	}
 }
 
-// BuildPipeline builds GStreamer pipeline with codec-specific parser
+// BuildPipeline builds GStreamer pipeline with codec-specific parser and RTP payloader
+// The explicit RTP payloader is required for proper VPS/SPS/PPS header transmission in HEVC
 func (s *SRTListenerStream) BuildPipeline() string {
 	outputURL := fmt.Sprintf("rtsp://127.0.0.1:%d/%s", s.config.RTSPPort, s.Name)
 
-	// Determine codec-specific parser
-	var parse string
+	// Determine codec-specific parser AND payloader
+	// For HEVC: h265parse extracts NAL units, rtph265pay creates RTP packets with proper headers
+	// For H264: h264parse extracts NAL units, rtph264pay creates RTP packets with proper headers
+	// config-interval=-1 ensures VPS/SPS/PPS (HEVC) or SPS/PPS (H264) are sent with every IDR frame
+	var parseAndPay string
 	switch s.Codec {
 	case CodecHEVC:
-		parse = "h265parse config-interval=-1"
+		parseAndPay = "h265parse config-interval=-1 ! rtph265pay config-interval=-1 pt=96"
 	case CodecH264:
 		fallthrough
 	default:
-		parse = "h264parse config-interval=-1"
+		parseAndPay = "h264parse config-interval=-1 ! rtph264pay config-interval=-1 pt=96"
 	}
 
 	var srtParams string
@@ -1969,7 +1973,7 @@ func (s *SRTListenerStream) BuildPipeline() string {
 
 	return fmt.Sprintf(
 		`srtsrc uri="srt://0.0.0.0:%d?%s" ! tsdemux ! %s ! rtspclientsink location="%s" protocols=tcp latency=0`,
-		s.Port, srtParams, parse, outputURL)
+		s.Port, srtParams, parseAndPay, outputURL)
 }
 
 func (s *SRTListenerStream) StartWithRetry() {
